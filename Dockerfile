@@ -47,7 +47,6 @@ RUN apk update && \
         openldap-dev \
         enchant-dev \
         unixodbc-dev \
-        memcached-dev \
         cyrus-sasl-dev \
         postgresql-dev \
         imagemagick-dev \
@@ -63,6 +62,16 @@ RUN apk update && \
         libmcrypt-dev \
         libmemcached-dev \
         libjpeg-turbo-dev
+
+RUN cd /tmp && git clone https://github.com/php-memcached-dev/php-memcached.git && \
+    cd php-memcached/ && \
+    git checkout php7 && \
+    phpize && \
+    ./configure --enable-memcached-json && \
+    make && \
+    make install
+
+RUN docker-php-ext-enable memcached
 
 RUN docker-php-ext-configure hash && \
     docker-php-ext-configure gd \
@@ -177,7 +186,7 @@ RUN docker-php-ext-install \
 
 ARG NGINX_VERSION=1.13.2
 ARG PAGESPEED_VERSION=1.11.33.4
-ARG LIBPNG_VERSION=1.2.56
+ARG LIBPNG_VERSION=1.2.57
 ARG MAKE_J=4
 ARG PAGESPEED_ENABLE=on
 
@@ -266,21 +275,20 @@ RUN cd /tmp && \
     LD_LIBRARY_PATH=/tmp/modpagespeed-${PAGESPEED_VERSION}/usr/lib:/usr/lib ./configure \
         --sbin-path=/usr/sbin \
         --modules-path=/usr/lib/nginx \
-        --with-http_ssl_module \
-        --with-http_gzip_static_module \
         --with-file-aio \
+        --with-http_ssl_module \
         --with-http_v2_module \
         --with-http_realip_module \
         --with-http_sub_module \
         --with-http_gunzip_module \
         --with-http_secure_link_module \
+        --with-http_gzip_static_module \
         --with-threads \
         --with-stream \
         --with-stream_ssl_module \
         --with-http_geoip_module \
         --without-http_autoindex_module \
         --without-http_browser_module \
-        --without-http_memcached_module \
         --without-http_userid_module \
         --without-mail_pop3_module \
         --without-mail_imap_module \
